@@ -20,7 +20,8 @@ detector = htm.HandDetector(detection_con=0.7)
 
 m = alsaaudio.Mixer()
 m.setmute(0)
-m.setvolume(0)
+vol = m.getvolume()
+vol_bar = 400
 
 while True:
     ret, img = cam.read()
@@ -41,10 +42,18 @@ while True:
         length = math.hypot(x2-x1, y2-y1)
 
         vol = np.interp(length, [50,300], [0,100])
+        vol_bar = np.interp(length, [50,300], [400,150])
         m.setvolume(int(vol))
+        cv2.putText(img, f'{int(vol)}%', (40,450), cv2.FONT_HERSHEY_SIMPLEX,
+                1, (255,0,0), 2)
 
         if length < 50:
             cv2.circle(img, (cx,cy), 15, (0,0,255), cv2.FILLED)
+
+    cv2.rectangle(img, (50, 150), (85,400), (255,0,0), 3)
+    if not isinstance(vol_bar, list):
+        cv2.rectangle(img, (50, int(vol_bar)), (85,400), (255,0,0),
+                cv2.FILLED)
 
     current_time = time.time()
     fps = 1/(current_time-prev_time)
